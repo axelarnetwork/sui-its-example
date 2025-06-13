@@ -1,0 +1,22 @@
+{
+  "name": "sui_its",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@axelar-network/axelar-cgp-sui": "^1.1.3",
+    "@mysten/sui": "^1.32.0",
+    "commander": "^14.0.0",
+    "dotenv": "^16.5.0"
+  }
+}
