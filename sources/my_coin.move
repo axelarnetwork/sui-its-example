@@ -10,7 +10,7 @@ fun init(witness: MY_CUSTOM_COIN, ctx: &mut TxContext) {
         witness,
         6,
         b"MCC",
-        b"",
+        b"My Custom Token",
         b"",
         option::none(),
         ctx,
