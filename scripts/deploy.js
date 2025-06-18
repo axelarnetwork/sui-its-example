@@ -40,39 +40,23 @@ async function run() {
       c.type === 'created' && c.objectType.startsWith('0x2::coin::TreasuryCap')
   )
 
+  const metadataChange = response.objectChanges.find(
+    (c) =>
+      c.type === 'created' && c.objectType.startsWith('0x2::coin::CoinMetadata')
+  )
+
   const packageId = publishedChange?.packageId
   console.log('📦 Published package ID:', packageId)
 
   const treasuryCapId = treasuryChange.objectId
   console.log(treasuryCapId, ' the treasury cap id')
 
-  // const mintTx = new Transaction()
-
-  // mintTx.moveCall({
-  //   target:
-  //     '0xf80bdd0ebb2fb53213de3e3de34a15becc06568f873b99e3614720491c90ef17::my_custom_coin::mint',
-  //   arguments: [
-  //     mintTx.object(
-  //       '0x5a600a3d9b40406e500bb29ba31c7766d6ce972cb1bc615cb87d854948b10c8f'
-  //     ), // the cap you extracted
-  //     mintTx.pure.u64(1), // BigInt for u64
-  //     mintTx.pure.address(myAddress), // Sui address of the recipient
-  //   ],
-  // })
-
-  // console.log('🚀 Sending mint transaction…')
-
-  // const mintRes = await client.signAndExecuteTransaction({
-  //   signer: keypair,
-  //   transaction: mintTx,
-  //   options: { showObjectChanges: true },
-  // })
-
-  // console.log(mintRes, 'the mint res')
+  const metadata = metadataChange.objectId
+  console.log(metadata, 'metadata')
 }
 
 const program = new Command()
-program.description('Build and publish a Sui coin').action(async (opts) => {
+program.description('Deploy Sui Coin').action(async (opts) => {
   try {
     await run(opts)
   } catch (err) {

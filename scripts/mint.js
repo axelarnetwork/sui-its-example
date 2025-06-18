@@ -40,7 +40,7 @@ async function run(args) {
 
 const program = new Command()
 program
-  .description('Build and publish a Sui coin')
+  .description('Mint Sui Coin')
   .requiredOption('--coinPackageId <coinPackageId>', 'Coin Package Id')
   .requiredOption('--treasury <treasury>', 'Treasury')
   .action(async (opts) => {
