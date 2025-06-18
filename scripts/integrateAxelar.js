@@ -20,60 +20,76 @@ async function run(args) {
 
   const myAddress = keypair.getPublicKey().toSuiAddress()
 
-  // const registerCoinTx = new Transaction()
-  const txBuilder = new TxBuilder(client)
-  const tx = txBuilder.tx
-
-  // const coinInfo = registerCoinTx.moveCall({
-  //   target: `${suiItsPackageId}::coin_info::from_info`,
-  //   // typeArguments: [coinType],
-  //   arguments: [
-  //     registerCoinTx.object("My Custom Token"),
-  //     registerCoinTx.object("MCC"),
-  //     registerCoinTx.object("6"),
-  //   ],
-  // })
-
   const coinType = `${coinPackageId}::my_custom_coin::MY_CUSTOM_COIN`
 
-  console.log(coinType, 'coin type')
+  const registerCoinTx = new Transaction()
+  // const txBuilder = new TxBuilder(client)
+  // const tx = txBuilder.tx
 
-  const coinManagement = await txBuilder.moveCall({
+  const coinInfo = registerCoinTx.moveCall({
+    target: `${suiItsPackageId}::coin_info::from_info`,
+    typeArguments: [coinType],
+    arguments: [
+      registerCoinTx.object('My Custom Token'),
+      registerCoinTx.object('MCC'),
+      registerCoinTx.object('6'),
+    ],
+  })
+
+  // console.log(coinType, 'coin type')
+
+  // const coinManagement = await txBuilder.moveCall({
+  //   target: `${suiItsPackageId}::coin_management::new_locked`,
+  //   typeArguments: [coinType],
+  //   arguments: [],
+  // })
+
+  const coinManagement = registerCoinTx.moveCall({
     target: `${suiItsPackageId}::coin_management::new_locked`,
     typeArguments: [coinType],
     arguments: [],
   })
 
-  console.log(coinManagement, 'the coin management')
+  // console.log(coinManagement, 'the coin management')
 
-  const coinInfo = await txBuilder.moveCall({
-    target: `${suiItsPackageId}::coin_info::from_info`,
-    typeArguments: [coinType],
-    arguments: [
-      "My Custom Token",
-      "MCC",
-      "6",
-    ],
-  });
-
+  // const coinInfo = await txBuilder.moveCall({
+  //   target: `${suiItsPackageId}::coin_info::from_info`,
+  //   typeArguments: [coinType],
+  //   arguments: [
+  //     "My Custom Token",
+  //     "MCC",
+  //     "6",
+  //   ],
+  // });
 
   //CALL REGISTER COIN HERE
-  await txBuilder.moveCall({
+  // await txBuilder.moveCall({
+  //   target: `${suiItsPackageId}::interchain_token_service::register_coin`,
+  //   typeArguments: [coinType],
+  //   arguments: [suiItsObjectId, coinInfo, coinManagement],
+  // })
+
+  console.log(coinManagement, 'the coin management')
+
+  registerCoinTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::register_coin`,
     typeArguments: [coinType],
-    arguments: [suiItsObjectId, coinInfo, coinManagement],
+    arguments: [
+      registerCoinTx.object(suiItsObjectId),
+      registerCoinTx.object(coinInfo),
+      registerCoinTx.object(coinManagement),
+    ],
   })
 
   console.log('🚀 registering coin with ITS')
 
-  // await client.moveCall({
-  //   target:
-  //   signer: keypair,
-  //   transaction: txBuilder,
-  //   options: { showObjectChanges: true },
-  // })
+  const receipt = await client.signAndExecuteTransaction({
+    signer: keypair,
+    transaction: registerCoinTx,
+    options: { showObjectChanges: true },
+  })
 
-  const receipt = await txBuilder.signAndExecute(keypair)
+  // const receipt = await txBuilder.signAndExecute(keypair)
   console.log(receipt)
 }
 
