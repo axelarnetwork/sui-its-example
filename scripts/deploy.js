@@ -28,7 +28,7 @@ async function run() {
     transaction: tx,
     options: { showObjectChanges: true },
   })
-  console.log('✅ Publish succeeded!')
+  console.log('✅ Publish succeeded!', response)
 
   // Extract published package ID
   const publishedChange = response.objectChanges.find(
