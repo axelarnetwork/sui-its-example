@@ -1,30 +1,37 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import { Transaction } from '@mysten/sui/transactions'
+import { bcs } from '@mysten/sui/bcs'
 import { getWallet } from '../utils/index.js'
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
-const { TxBuilder } = require('@axelar-network/axelar-cgp-sui')
+import { ethers } from 'ethers'
 
-async function run(args) {
+async function registerCoinWithIts(args) {
   const suiItsPackageId =
     '0xe7818984af6b3e322a6d999ca291a125fc3f82e13e5e6d9affc3a712f96bc7ce'
 
   const suiItsObjectId =
     '0x55fcd94e5293ff04c512a23c835d79b75e52611f66496e2d02cca439b84fa73c'
 
-  const { coinPackageId, treasury, metadata } = args
+  const gatewayPackageId =
+    '0x6ddfcdd14a1019d13485a724db892fa0defe580f19c991eaabd690140abb21e4'
+
+  const gatewayObjectId =
+    '0x6fc18d39a9d7bf46c438bdb66ac9e90e902abffca15b846b32570538982fb3db'
+
+  const gasServiceObjectId =
+    '0xac1a4ad12d781c2f31edc2aa398154d53dbda0d50cb39a4319093e3b357bc27d'
+
+  const gasServicePackageId =
+    '0xddf711b99aec5c72594e5cf2da4014b2d30909850a759d2e8090add1088dbbc9'
+
+  const { coinPackageId } = args
 
   // Decode key
   const [keypair, client] = getWallet()
 
-  const myAddress = keypair.getPublicKey().toSuiAddress()
-
   const coinType = `${coinPackageId}::my_custom_coin::MY_CUSTOM_COIN`
 
   const registerCoinTx = new Transaction()
-  // const txBuilder = new TxBuilder(client)
-  // const tx = txBuilder.tx
 
   const coinInfo = registerCoinTx.moveCall({
     target: `${suiItsPackageId}::coin_info::from_info`,
@@ -36,40 +43,11 @@ async function run(args) {
     ],
   })
 
-  // console.log(coinType, 'coin type')
-
-  // const coinManagement = await txBuilder.moveCall({
-  //   target: `${suiItsPackageId}::coin_management::new_locked`,
-  //   typeArguments: [coinType],
-  //   arguments: [],
-  // })
-
   const coinManagement = registerCoinTx.moveCall({
     target: `${suiItsPackageId}::coin_management::new_locked`,
     typeArguments: [coinType],
     arguments: [],
   })
-
-  // console.log(coinManagement, 'the coin management')
-
-  // const coinInfo = await txBuilder.moveCall({
-  //   target: `${suiItsPackageId}::coin_info::from_info`,
-  //   typeArguments: [coinType],
-  //   arguments: [
-  //     "My Custom Token",
-  //     "MCC",
-  //     "6",
-  //   ],
-  // });
-
-  //CALL REGISTER COIN HERE
-  // await txBuilder.moveCall({
-  //   target: `${suiItsPackageId}::interchain_token_service::register_coin`,
-  //   typeArguments: [coinType],
-  //   arguments: [suiItsObjectId, coinInfo, coinManagement],
-  // })
-
-  console.log(coinManagement, 'the coin management')
 
   registerCoinTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::register_coin`,
@@ -81,31 +59,36 @@ async function run(args) {
     ],
   })
 
-  console.log('🚀 registering coin with ITS')
-
-  const receipt = await client.signAndExecuteTransaction({
+  const deployReceipt = await client.signAndExecuteTransaction({
     signer: keypair,
     transaction: registerCoinTx,
-    options: { showObjectChanges: true },
+    options: { showObjectChanges: true, showEvents: true },
   })
 
-  // const receipt = await txBuilder.signAndExecute(keypair)
-  console.log(receipt)
+  console.log('✅ Coin registration completed:', deployReceipt)
+
+  const coinRegisteredEvent = deployReceipt.events.find((event) =>
+    event.type.includes('CoinRegistered')
+  )
+
+  const tokenId = coinRegisteredEvent.parsedJson.token_id.id
+  console.log('🎯 Token ID:', tokenId)
+
+  return deployReceipt
 }
 
-const program = new Command()
-program
+const registerCoinCommand = new Command()
+registerCoinCommand
   .description('Register Sui coin with ITS')
   .requiredOption('--coinPackageId <coinPackageId>', 'Coin Package Id')
   .requiredOption('--treasury <treasury>', 'Treasury')
-  .requiredOption('--metadata <metadata>', 'Metadata')
   .action(async (opts) => {
     try {
-      await run(opts)
+      await registerCoinWithIts(opts)
     } catch (err) {
       console.error('❌ Error:', err.message || err)
       process.exit(1)
     }
   })
 
-program.parse(process.argv)
+registerCoinCommand.parse(process.argv)
