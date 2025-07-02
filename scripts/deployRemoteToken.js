@@ -4,8 +4,7 @@ import { Transaction } from '@mysten/sui/transactions'
 import { bcs } from '@mysten/sui/bcs'
 import { getWallet } from '../utils/index.js'
 import { ethers } from 'ethers'
-import { SUI_TYPE_ARG } from "@mysten/sui/utils";
-
+import { SUI_TYPE_ARG } from '@mysten/sui/utils'
 
 async function registerCoinWithIts(args) {
   const suiItsPackageId =
@@ -35,37 +34,29 @@ async function registerCoinWithIts(args) {
 
   const deployRemoteToken = new Transaction()
 
-  //   const tokenIdBytes = Uint8Array.from(Buffer.from(tokenId.slice(2), 'hex'))
 
   const tokenIdObj = deployRemoteToken.moveCall({
     target: `${suiItsPackageId}::token_id::from_u256`,
-    arguments: [deployRemoteToken.pure('u256', BigInt(tokenId))],
+    arguments: [deployRemoteToken.pure.u256(tokenId)],
   })
-
-  deployRemoteToken.setGasBudget(100_000_000)
 
   const deployRemoteTokenTicket = deployRemoteToken.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::deploy_remote_interchain_token`,
     arguments: [
       deployRemoteToken.object(suiItsObjectId),
       tokenIdObj,
-      deployRemoteToken.pure(
-        bcs.string().serialize('ethereum-sepolia').toBytes()
-      ),
+      deployRemoteToken.pure.string('ethereum-sepolia'),
     ],
     typeArguments: [coinType],
   })
 
   console.log('🚀 Deploying remote interchain token...')
 
-  const unitAmount = ethers.utils.parseUnits('0.1', 9).toBigInt()
+  const unitAmount = ethers.utils.parseUnits('1', 9).toBigInt()
 
-  const [gas] = deployRemoteToken.splitCoins(deployRemoteToken.gas, [unitAmount])
-
-  const refundBytes = Uint8Array.from(
-    Buffer.from(keypair.getPublicKey().toSuiAddress().slice(2), 'hex')
-  )
-  const emptyParams = bcs.vector(bcs.u8()).serialize([]) // → Uint8Array for Vec<u8>
+  const [gas] = deployRemoteToken.splitCoins(deployRemoteToken.gas, [
+    unitAmount,
+  ])
 
   deployRemoteToken.moveCall({
     target: `${gasServicePackageId}::gas_service::pay_gas`,
@@ -74,14 +65,13 @@ async function registerCoinWithIts(args) {
       deployRemoteToken.object(gasServiceObjectId),
       deployRemoteTokenTicket,
       gas,
-      deployRemoteToken.pure(refundBytes, 'address'),
-      deployRemoteToken.pure(emptyParams, 'vector<u8>'),
+      deployRemoteToken.object(keypair.getPublicKey().toSuiAddress()),
+      deployRemoteToken.pure.string(""),
     ],
   })
 
   deployRemoteToken.moveCall({
     target: `${gatewayPackageId}::gateway::send_message`,
-    // typeArguments: [SUI_TYPE_ARG],
     arguments: [
       deployRemoteToken.object(gatewayObjectId), // &Gateway
       deployRemoteTokenTicket, // MessageTicket

@@ -2,6 +2,8 @@
 import { Command } from 'commander'
 import { Transaction } from '@mysten/sui/transactions'
 import { getWallet } from '../utils/index.js'
+import { ethers } from 'ethers'
+import { SUI_TYPE_ARG } from '@mysten/sui/utils'
 
 const SUI_PACKAGE_ID = '0x2'
 const CLOCK_PACKAGE_ID = '0x6'
@@ -16,6 +18,14 @@ async function interchainTransferWithIts(args) {
   const gateway =
     '0x6ddfcdd14a1019d13485a724db892fa0defe580f19c991eaabd690140abb21e4'
 
+  const gatewayObjectId =
+    '0x6fc18d39a9d7bf46c438bdb66ac9e90e902abffca15b846b32570538982fb3db'
+
+  const gasServiceObjectId =
+    '0xac1a4ad12d781c2f31edc2aa398154d53dbda0d50cb39a4319093e3b357bc27d'
+
+  const gasServicePackageId =
+    '0xddf711b99aec5c72594e5cf2da4014b2d30909850a759d2e8090add1088dbbc9'
 
   const {
     coinPackageId,
@@ -34,16 +44,16 @@ async function interchainTransferWithIts(args) {
   // Create new transaction for interchain transfer
   const interchainTransferTx = new Transaction()
 
-  const TokenId = interchainTransferTx.moveCall({
+  const tokenIdObj = interchainTransferTx.moveCall({
     target: `${suiItsPackageId}::token_id::from_u256`,
-    arguments: [interchainTransferTx.object(tokenId)],
+    arguments: [interchainTransferTx.pure.u256(tokenId)],
   })
 
-  const Coin = interchainTransferTx.moveCall({
+  const coinObj = interchainTransferTx.moveCall({
     target: `${SUI_PACKAGE_ID}::coin::mint`,
     arguments: [
       interchainTransferTx.object(treasuryCap),
-      interchainTransferTx.object(amount),
+      interchainTransferTx.pure.u256(amount),
     ],
     typeArguments: [coinType],
   })
@@ -58,11 +68,11 @@ async function interchainTransferWithIts(args) {
     target: `${suiItsPackageId}::interchain_token_service::prepare_interchain_transfer`,
     typeArguments: [coinType],
     arguments: [
-      interchainTransferTx.object(TokenId),
-      interchainTransferTx.object(Coin),
-      interchainTransferTx.object(destinationChain),
+      interchainTransferTx.object(tokenIdObj),
+      interchainTransferTx.object(coinObj),
+      interchainTransferTx.pure.string('ethereum-sepolia'),
       interchainTransferTx.object(destinationAddress),
-      interchainTransferTx.object('0x'),
+      interchainTransferTx.pure.string('0x'),
       interchainTransferTx.object(gatewayChannelId),
     ],
   })
@@ -70,15 +80,46 @@ async function interchainTransferWithIts(args) {
   // Execute interchain transfer
   interchainTransferTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::send_interchain_transfer`,
+    typeArguments: [coinType],
     arguments: [
       interchainTransferTx.object(suiItsObjectId),
-      interchainTransferTx.object(ticket),
+      ticket,
       interchainTransferTx.object(CLOCK_PACKAGE_ID),
     ],
-    typeArguments: [coinType],
   })
 
   console.log('🚀 interchain transfer via ITS')
+
+  const unitAmount = ethers.utils.parseUnits('1', 9).toBigInt()
+
+  const [gas] = interchainTransferTx.splitCoins(interchainTransferTx.gas, [
+    unitAmount,
+  ])
+
+  interchainTransferTx.moveCall({
+    target: `${gasServicePackageId}::gas_service::pay_gas`,
+    typeArguments: [SUI_TYPE_ARG],
+    arguments: [
+      interchainTransferTx.object(gasServiceObjectId),
+      ticket,
+      gas,
+      interchainTransferTx.object(keypair.getPublicKey().toSuiAddress()),
+      interchainTransferTx.pure.string(''),
+    ],
+  })
+
+  interchainTransferTx.moveCall({
+    target: `${gateway}::gateway::send_message`,
+    arguments: [
+      interchainTransferTx.object(gatewayObjectId), // &Gateway
+      ticket, // MessageTicket
+    ],
+  })
+
+  interchainTransferTx.moveCall({
+    target: `${gateway}::channel::destroy`,
+    arguments: [gatewayChannelId],
+  })
 
   const receipt = await client.signAndExecuteTransaction({
     signer: keypair,
