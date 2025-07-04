@@ -41,6 +41,8 @@ async function interchainTransferWithIts(args) {
   // Decode key
   const [keypair, client] = getWallet()
 
+  const myAddress = keypair.getPublicKey().toSuiAddress()
+
   // Create new transaction for interchain transfer
   const interchainTransferTx = new Transaction()
 
@@ -51,34 +53,35 @@ async function interchainTransferWithIts(args) {
 
   const coinObj = interchainTransferTx.moveCall({
     target: `${SUI_PACKAGE_ID}::coin::mint`,
+    typeArguments: [coinType],
     arguments: [
       interchainTransferTx.object(treasuryCap),
-      interchainTransferTx.pure.u256(amount),
+      interchainTransferTx.pure.u64(amount),
     ],
-    typeArguments: [coinType],
   })
 
   const gatewayChannelId = interchainTransferTx.moveCall({
     target: `${gateway}::channel::new`,
-    arguments: [],
   })
+
+  console.log('🚀 coinObj', coinObj)
 
   // Get ticket for the transfer
   const ticket = interchainTransferTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::prepare_interchain_transfer`,
     typeArguments: [coinType],
     arguments: [
-      interchainTransferTx.object(tokenIdObj),
-      interchainTransferTx.object(coinObj),
+      tokenIdObj,
+      coinObj,
       interchainTransferTx.pure.string('ethereum-sepolia'),
-      interchainTransferTx.object(destinationAddress),
+      interchainTransferTx.pure.string(destinationAddress),
       interchainTransferTx.pure.string('0x'),
-      interchainTransferTx.object(gatewayChannelId),
+      gatewayChannelId,
     ],
   })
 
   // Execute interchain transfer
-  interchainTransferTx.moveCall({
+  const interchainTransferTicket = interchainTransferTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::send_interchain_transfer`,
     typeArguments: [coinType],
     arguments: [
@@ -90,10 +93,10 @@ async function interchainTransferWithIts(args) {
 
   console.log('🚀 interchain transfer via ITS')
 
-  const unitAmount = ethers.utils.parseUnits('1', 9).toBigInt()
+  const unitAmountGas = ethers.utils.parseUnits('1', 9).toBigInt()
 
   const [gas] = interchainTransferTx.splitCoins(interchainTransferTx.gas, [
-    unitAmount,
+    unitAmountGas,
   ])
 
   interchainTransferTx.moveCall({
@@ -101,7 +104,7 @@ async function interchainTransferWithIts(args) {
     typeArguments: [SUI_TYPE_ARG],
     arguments: [
       interchainTransferTx.object(gasServiceObjectId),
-      ticket,
+      interchainTransferTicket,
       gas,
       interchainTransferTx.object(keypair.getPublicKey().toSuiAddress()),
       interchainTransferTx.pure.string(''),
@@ -112,13 +115,13 @@ async function interchainTransferWithIts(args) {
     target: `${gateway}::gateway::send_message`,
     arguments: [
       interchainTransferTx.object(gatewayObjectId), // &Gateway
-      ticket, // MessageTicket
+      interchainTransferTicket, // MessageTicket
     ],
   })
 
   interchainTransferTx.moveCall({
     target: `${gateway}::channel::destroy`,
-    arguments: [gatewayChannelId],
+    arguments: [interchainTransferTx.object(gatewayChannelId)],
   })
 
   const receipt = await client.signAndExecuteTransaction({
