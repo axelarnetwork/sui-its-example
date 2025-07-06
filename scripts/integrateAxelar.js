@@ -92,3 +92,7 @@ registerCoinCommand
   })
 
 registerCoinCommand.parse(process.argv)
+
+
+
+//node scripts/interchainTransfer.js --coinPackageId 0x0488882712ca159de81b43cf2b13fbba123e349e9b45524a0ca6fa95a9d7b012 --tokenId 0x52b1b1524c3db74b65edb88bc9fbe28c551485707cfe8a7bb2776736796061ef --destinationChain "ethereum-sepolia" --destinationAddress "0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE" --treasuryCap 0x57b300a8c8bcee3974af0b4e17a569fa3e82b702e54520981431827dbc4d4df7 --amount 1
