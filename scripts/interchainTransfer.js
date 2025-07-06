@@ -41,7 +41,6 @@ async function interchainTransferWithIts(args) {
   // Decode key
   const [keypair, client] = getWallet()
 
-  const myAddress = keypair.getPublicKey().toSuiAddress()
 
   // Create new transaction for interchain transfer
   const interchainTransferTx = new Transaction()
@@ -66,6 +65,8 @@ async function interchainTransferWithIts(args) {
 
   console.log('🚀 coinObj', coinObj)
 
+  const destRaw = ethers.utils.arrayify(destinationAddress) // Uint8Array, length === 20
+
   // Get ticket for the transfer
   const ticket = interchainTransferTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::prepare_interchain_transfer`,
@@ -73,8 +74,8 @@ async function interchainTransferWithIts(args) {
     arguments: [
       tokenIdObj,
       coinObj,
-      interchainTransferTx.pure.string('ethereum-sepolia'),
-      interchainTransferTx.pure.string(destinationAddress),
+      interchainTransferTx.pure.string(destinationChain),
+      interchainTransferTx.pure.vector('u8', destRaw),
       interchainTransferTx.pure.string('0x'),
       gatewayChannelId,
     ],
