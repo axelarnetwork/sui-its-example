@@ -1,42 +1,22 @@
-OUT OF DATE!!!
+# Checkpoint 2
 
+At this point you should be able to deploy your compiled Sui coin on the Sui testnet
 
+Deploy Coin:
+
+```bash
 node scripts/deploy.js
-
 ```
+
+The deploy script should emit the following logs
+
+```bash
+UPDATING GIT DEPENDENCY https://github.com/MystenLabs/sui.git
+INCLUDING DEPENDENCY Sui
+INCLUDING DEPENDENCY MoveStdlib
+BUILDING my_coin
 🚀 Sending publish transaction…
 ✅ Publish succeeded!
-📦 Published package ID: 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
-💰 Treasury cap: 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
-```
-
-
-node scripts/mint.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --treasury 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
-
-```
-🚀 Sending mint transaction…
-💰 my token balance 0
-New coin object: 0xf45b53d54aa4aec8ac4c26752ba667acdc050d15c0eb5093bbe77c15d1851a53
-```
-
-
-node scripts/integrateAxelar.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
-
-```
-✅ Coin registration completed:
-🎯 Token ID: 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
-```
-
- node scripts/deployRemoteToken.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
-
-```
-🚀 Deploying remote interchain token...
-✅ Remote token deployment completed 948bMX2Ceff57Xtof5qhrdaM9eHJZc633EW6BsBspGST
-```
-
-
-node scripts/interchainTransfer.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7 --destinationChain "ethereum-sepolia" --destinationAddress "0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE" --amount 1 --coinObjectId 0xf38b0b362956c341bfd958fb02eaec7837bbb5de7c2187b4d066d5e61a8b639c
-```
-🚀 interchain transfer via ITS
-🧾 Transaction digest: Eg77T9wozS4i1u6zveuLY51grewrsF5h2Yj8ecsLFiQi
+📦 Published package ID: 0x1f5d309ac962e444cc58e8ef268b319123199c762856cef23dcdf4303eb37258
+💰 Treasury cap: 0x218d0c8546e9c694fc9946e51bdcedcdba7e3b42b6b3c61d1c095f8df5846b6e
 ```
