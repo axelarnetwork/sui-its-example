@@ -1,5 +1,6 @@
-OUT OF DATE!!!
+# Axelar Sui Demo
 
+This demo showcases how to register a Sui coin with Axelar's ITS. It starts off with building a (simple) customized token and deploying the token. It then steps through the integration process of ITS and concludes with sending an interchain transfer to Ethereum from Sui. Full explanation can be found on Axelar docs.
 
 node scripts/deploy.js
 
