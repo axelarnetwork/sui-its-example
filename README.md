@@ -1,42 +1,14 @@
-OUT OF DATE!!!
+# Checkpoint 3
 
+This checkpoint contains the scripts to be able to both deploy a coin on Sui and mint a new coin 
 
-node scripts/deploy.js
+You can run the script by calling 
 
-```
-🚀 Sending publish transaction…
-✅ Publish succeeded!
-📦 Published package ID: 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
-💰 Treasury cap: 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
-```
-
-
-node scripts/mint.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --treasury 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
-
-```
+```bash
+node scripts/mint.js --coinPackageId 0xadbcee9b996c4c52f13506f5d41c9e246e6286586dc2687346d51e8bb45807b7 --treasury 0xc49114731db6174362c4238f738a7c5148dddf764b2110385e9cb353e881c9cf
 🚀 Sending mint transaction…
-💰 my token balance 0
-New coin object: 0xf45b53d54aa4aec8ac4c26752ba667acdc050d15c0eb5093bbe77c15d1851a53
+💰 my token balance 1
+
+New coin objectId: 0xf0b4db53c2cecb4b9252cad55407358d6fcad57dfdfc72dfc3af29f298de2522
 ```
 
-
-node scripts/integrateAxelar.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
-
-```
-✅ Coin registration completed:
-🎯 Token ID: 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
-```
-
- node scripts/deployRemoteToken.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
-
-```
-🚀 Deploying remote interchain token...
-✅ Remote token deployment completed 948bMX2Ceff57Xtof5qhrdaM9eHJZc633EW6BsBspGST
-```
-
-
-node scripts/interchainTransfer.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7 --destinationChain "ethereum-sepolia" --destinationAddress "0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE" --amount 1 --coinObjectId 0xf38b0b362956c341bfd958fb02eaec7837bbb5de7c2187b4d066d5e61a8b639c
-```
-🚀 interchain transfer via ITS
-🧾 Transaction digest: Eg77T9wozS4i1u6zveuLY51grewrsF5h2Yj8ecsLFiQi
-```
