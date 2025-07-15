@@ -24,7 +24,7 @@ async function run(args) {
 
   console.log('🚀 Sending mint transaction…')
 
-  await client.signAndExecuteTransaction({
+  const receipt = await client.signAndExecuteTransaction({
     signer: keypair,
     transaction: mintTx,
     options: { showObjectChanges: true },
@@ -36,6 +36,10 @@ async function run(args) {
   })
 
   console.log(`💰 my token balance ${balance.totalBalance}`)
+
+  const coinChanged = receipt.objectChanges.find((c) => c.type === 'created')
+
+  console.log (`New coin objectId: ${coinChanged.objectId}`)
 }
 
 const program = new Command()

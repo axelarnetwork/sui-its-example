@@ -1,35 +1,42 @@
+OUT OF DATE!!!
+
+
 node scripts/deploy.js
 
 ```
-📦 Published package ID: 0x2cf7c8771961dad0ab9b0676bb3a919e3ac387c3d6252e187304d4058be5823e
-0xeba7b92db9f606ac6b5dce206fe4fee172c738df3f066edfff601f027e6a4e2a  the treasury cap id
-0xf1290561142ae7dcf66af78b56537ec45c67581dae7d080b9bf30eb30c54660c metadata
+🚀 Sending publish transaction…
+✅ Publish succeeded!
+📦 Published package ID: 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
+💰 Treasury cap: 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
 ```
 
 
-node scripts/mint.js --coinPackageId 0x2cf7c8771961dad0ab9b0676bb3a919e3ac387c3d6252e187304d4058be5823e --treasury 0xeba7b92db9f606ac6b5dce206fe4fee172c738df3f066edfff601f027e6a4e2a
+node scripts/mint.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --treasury 0xc2d5d3e597472a87a939e9e70518a7c922aae92efea23dbc36009219dab14fea
 
 ```
 🚀 Sending mint transaction…
-💰 my token balance 1
+💰 my token balance 0
+New coin object: 0xf45b53d54aa4aec8ac4c26752ba667acdc050d15c0eb5093bbe77c15d1851a53
 ```
 
 
-node scripts/integrateAxelar.js --coinPackageId 0x2cf7c8771961dad0ab9b0676bb3a919e3ac387c3d6252e187304d4058be5823e --treasury 0xeba7b92db9f606ac6b5dce206fe4fee172c738df3f066edfff601f027e6a4e2a
+node scripts/integrateAxelar.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a
 
 ```
-Token ID: 0x583c8d749f49f78ef4d498975381c578cb2007d9d3a045f2036c8e01f04ef1ac
+✅ Coin registration completed:
+🎯 Token ID: 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
 ```
 
-node scripts/deployRemoteToken.js --coinPackageId 0x2cf7c8771961dad0ab9b0676bb3a919e3ac387c3d6252e187304d4058be5823e --tokenId 0x583c8d749f49f78ef4d498975381c578cb2007d9d3a045f2036c8e01f04ef1ac
+ node scripts/deployRemoteToken.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7
 
 ```
-  digest: 'AiRUDnzRMMmXuDNRHDopKy6Gk7K9uUymGfMiv6sfGdf3',
+🚀 Deploying remote interchain token...
+✅ Remote token deployment completed 948bMX2Ceff57Xtof5qhrdaM9eHJZc633EW6BsBspGST
 ```
 
 
-node scripts/interchainTransfer.js --coinPackageId 0x2cf7c8771961dad0ab9b0676bb3a919e3ac387c3d6252e187304d4058be5823e --tokenId 0x583c8d749f49f78ef4d498975381c578cb2007d9d3a045f2036c8e01f04ef1ac --destinationChain "ethereum-sepolia" --destinationAddress "0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE" --treasuryCap 0xeba7b92db9f606ac6b5dce206fe4fee172c738df3f066edfff601f027e6a4e2a --amount 1
-
+node scripts/interchainTransfer.js --coinPackageId 0x2e2b9c9676a313a43765b4b8ca5c1da9e2f887af99673938aac787f32ba2366a --tokenId 0x4ab8d0cf38246b909c12b5eb7ae447adb9736098c578ccf353861b6f19a656d7 --destinationChain "ethereum-sepolia" --destinationAddress "0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE" --amount 1 --coinObjectId 0xf38b0b362956c341bfd958fb02eaec7837bbb5de7c2187b4d066d5e61a8b639c
 ```
-  digest: 'BcmwG7P98JYyzVMKbG7JwQRvvdVqd7CX7qiA5i5xJZmc',
+🚀 interchain transfer via ITS
+🧾 Transaction digest: Eg77T9wozS4i1u6zveuLY51grewrsF5h2Yj8ecsLFiQi
 ```

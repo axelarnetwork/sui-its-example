@@ -15,7 +15,7 @@ fun init(witness: MY_CUSTOM_COIN, ctx: &mut TxContext) {
         option::none(),
         ctx,
     );
-	//make metadata immutable
+	//make metadata immutable [ie metadata is its own object with no owner, anyone can access it]
     transfer::public_freeze_object(metadata);
 	//transfer initial supply to sender
     transfer::public_transfer(treasury, ctx.sender())
