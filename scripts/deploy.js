@@ -6,6 +6,7 @@ import { getWallet } from '../utils/index.js'
 async function run() {
   // Decode key
   const [keypair, client] = getWallet()
+  const myAddress = keypair.getPublicKey().toSuiAddress()
 
   // Build the Move package
   console.log('📦 Building Move package')
@@ -19,7 +20,6 @@ async function run() {
   const tx = new Transaction()
   const [upgradeCap] = tx.publish({ modules, dependencies })
 
-  const myAddress = keypair.getPublicKey().toSuiAddress()
   tx.transferObjects([upgradeCap], myAddress)
 
   console.log('🚀 Sending publish transaction…')
@@ -40,25 +40,17 @@ async function run() {
       c.type === 'created' && c.objectType.startsWith('0x2::coin::TreasuryCap')
   )
 
-  const metadataChange = response.objectChanges.find(
-    (c) =>
-      c.type === 'created' && c.objectType.startsWith('0x2::coin::CoinMetadata')
-  )
-
   const packageId = publishedChange?.packageId
   console.log('📦 Published package ID:', packageId)
 
   const treasuryCapId = treasuryChange.objectId
-  console.log(treasuryCapId, ' the treasury cap id')
-
-  const metadata = metadataChange.objectId
-  console.log(metadata, 'metadata')
+  console.log('💰 Treasury cap:', treasuryCapId)
 }
 
 const program = new Command()
-program.description('Deploy Sui Coin').action(async (opts) => {
+program.description('Deploy Sui Coin').action(async () => {
   try {
-    await run(opts)
+    await run()
   } catch (err) {
     console.error('❌ Error:', err.message || err)
     process.exit(1)

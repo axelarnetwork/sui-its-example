@@ -4,43 +4,30 @@ import { Transaction } from '@mysten/sui/transactions'
 import { getWallet } from '../utils/index.js'
 import { ethers } from 'ethers'
 import { SUI_TYPE_ARG } from '@mysten/sui/utils'
+import {
+  suiItsPackageId,
+  suiItsObjectId,
+  gasServiceObjectId,
+  gatewayPackageId,
+  gasServicePackageId,
+  gatewayObjectId,
+  SUI_CLOCK_OBJECT_ID,
+} from '../utils/constants.js'
 
-const SUI_PACKAGE_ID = '0x2'
-const CLOCK_PACKAGE_ID = '0x6'
-
-async function interchainTransferWithIts(args) {
-  const suiItsPackageId =
-    '0xe7818984af6b3e322a6d999ca291a125fc3f82e13e5e6d9affc3a712f96bc7ce'
-
-  const suiItsObjectId =
-    '0x55fcd94e5293ff04c512a23c835d79b75e52611f66496e2d02cca439b84fa73c'
-
-  const gateway =
-    '0x6ddfcdd14a1019d13485a724db892fa0defe580f19c991eaabd690140abb21e4'
-
-  const gatewayObjectId =
-    '0x6fc18d39a9d7bf46c438bdb66ac9e90e902abffca15b846b32570538982fb3db'
-
-  const gasServiceObjectId =
-    '0xac1a4ad12d781c2f31edc2aa398154d53dbda0d50cb39a4319093e3b357bc27d'
-
-  const gasServicePackageId =
-    '0xddf711b99aec5c72594e5cf2da4014b2d30909850a759d2e8090add1088dbbc9'
-
+async function run(args) {
   const {
     coinPackageId,
     tokenId,
     destinationChain,
     destinationAddress,
-    treasuryCap,
     amount,
+    coinObjectId,
   } = args
 
   const coinType = `${coinPackageId}::my_custom_coin::MY_CUSTOM_COIN`
 
   // Decode key
   const [keypair, client] = getWallet()
-
 
   // Create new transaction for interchain transfer
   const interchainTransferTx = new Transaction()
@@ -50,20 +37,11 @@ async function interchainTransferWithIts(args) {
     arguments: [interchainTransferTx.pure.u256(tokenId)],
   })
 
-  const coinObj = interchainTransferTx.moveCall({
-    target: `${SUI_PACKAGE_ID}::coin::mint`,
-    typeArguments: [coinType],
-    arguments: [
-      interchainTransferTx.object(treasuryCap),
-      interchainTransferTx.pure.u64(amount),
-    ],
-  })
-
   const gatewayChannelId = interchainTransferTx.moveCall({
-    target: `${gateway}::channel::new`,
+    target: `${gatewayPackageId}::channel::new`,
   })
 
-  console.log('🚀 coinObj', coinObj)
+  const [coinsToSend] = interchainTransferTx.splitCoins(coinObjectId, [amount])
 
   const destRaw = ethers.utils.arrayify(destinationAddress) // Uint8Array, length === 20
 
@@ -73,7 +51,7 @@ async function interchainTransferWithIts(args) {
     typeArguments: [coinType],
     arguments: [
       tokenIdObj,
-      coinObj,
+      coinsToSend,
       interchainTransferTx.pure.string(destinationChain),
       interchainTransferTx.pure.vector('u8', destRaw),
       interchainTransferTx.pure.string('0x'),
@@ -88,7 +66,7 @@ async function interchainTransferWithIts(args) {
     arguments: [
       interchainTransferTx.object(suiItsObjectId),
       ticket,
-      interchainTransferTx.object(CLOCK_PACKAGE_ID),
+      interchainTransferTx.object(SUI_CLOCK_OBJECT_ID),
     ],
   })
 
@@ -113,7 +91,7 @@ async function interchainTransferWithIts(args) {
   })
 
   interchainTransferTx.moveCall({
-    target: `${gateway}::gateway::send_message`,
+    target: `${gatewayPackageId}::gateway::send_message`,
     arguments: [
       interchainTransferTx.object(gatewayObjectId), // &Gateway
       interchainTransferTicket, // MessageTicket
@@ -121,7 +99,7 @@ async function interchainTransferWithIts(args) {
   })
 
   interchainTransferTx.moveCall({
-    target: `${gateway}::channel::destroy`,
+    target: `${gatewayPackageId}::channel::destroy`,
     arguments: [interchainTransferTx.object(gatewayChannelId)],
   })
 
@@ -131,7 +109,7 @@ async function interchainTransferWithIts(args) {
     options: { showObjectChanges: true },
   })
 
-  console.log('🧾 Transaction receipt:', receipt)
+  console.log('🧾 Transaction digest:', receipt.digest)
 }
 
 const interchainTransferCommand = new Command()
@@ -148,14 +126,11 @@ interchainTransferCommand
     '--destinationAddress <destinationAddress>',
     'The destination address'
   )
-  .requiredOption(
-    '--treasuryCap <treasuryCap>',
-    'The treasury cap for the coin'
-  )
   .requiredOption('--amount <amount>', 'The amount of coins to be sent')
+  .requiredOption('--coinObjectId <coinObjectId>', 'The coin object Id')
   .action(async (opts) => {
     try {
-      await interchainTransferWithIts(opts)
+      await run(opts)
     } catch (err) {
       console.error('❌ Error:', err.message || err)
       process.exit(1)
