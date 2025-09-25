@@ -11,7 +11,7 @@ async function run(args) {
   const [keypair, client] = getWallet()
 
   const registerCoinTx = new Transaction()
-  
+
   const coinType = `${coinPackageId}::my_custom_coin::MY_CUSTOM_COIN`
 
   //no longer call this, just pass in the params to register_coin_from_info()
@@ -25,26 +25,35 @@ async function run(args) {
     ],
   })
 
-
-
+  //create mint/burn manager
   const coinManagement = registerCoinTx.moveCall({
     target: `${suiItsPackageId}::coin_management::new_with_cap`,
     typeArguments: [coinType],
     arguments: [treasuryCap],
   })
 
-  const gatewayChannelId = registerCoinTx.moveCall({
+  //create token deployment channel
+  const tokenDeploymentChannelId = registerCoinTx.moveCall({
     target: `${gatewayPackageId}::channel::new`,
   })
 
-  //add distributor
-//   TODO:
-//   await txBuilder.moveCall({
-//     target: `${ITS.address}::coin_management::add_distributor`,
-//     typeArguments: [coinType],
-//     arguments: [coinManagement, gatewayChannelId],
-//   });
+  //add management object as distributor
+  registerCoinTx.moveCall({
+    target: `${suiItsPackageId}::coin_management::add_distributor`,
+    typeArguments: [coinType],
+    arguments: [
+      registerCoinTx.object(coinManagement),
+      registerCoinTx.object(tokenDeploymentChannelId),
+    ],
+  })
 
+  //transfer token deployment channel to sender
+  registerCoinTx.transferObjects(
+    [tokenDeploymentChannelId],
+    keypair.getPublicKey().toSuiAddress()
+  )
+
+  //register coin
   registerCoinTx.moveCall({
     target: `${suiItsPackageId}::interchain_token_service::register_coin`,
     typeArguments: [coinType],
@@ -53,11 +62,6 @@ async function run(args) {
       registerCoinTx.object(coinInfo),
       registerCoinTx.object(coinManagement),
     ],
-  })
-
-  registerCoinTx.moveCall({
-    target: `${gatewayPackageId}::channel::destroy`,
-    arguments: [interchainTransferTx.object(gatewayChannelId)],
   })
 
   const deployReceipt = await client.signAndExecuteTransaction({
