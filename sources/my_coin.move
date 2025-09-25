@@ -1,3 +1,4 @@
+// when deployed my_coin gets replaced with package address
 module my_coin::my_custom_coin;
 
 use sui::coin::{Self, TreasuryCap};
@@ -9,8 +10,8 @@ fun init(witness: MY_CUSTOM_COIN, ctx: &mut TxContext) {
     let (treasury, metadata) = coin::create_currency(
         witness,
         6,
-        b"MCC",
-        b"My Custom Token",
+        b"MIC",
+        b"My Interchain Coin",
         b"",
         option::none(),
         ctx,
